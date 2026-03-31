@@ -5,16 +5,16 @@ import {
 } from './useThreeUtils'
 
 // Parámetros de física — valores del reverse engineering de Lusion
-const DAMPING = 0.8
-const ATTRACTION_FORCE = 2.0
-const MOUSE_FORCE_COEF = 8
+const DAMPING = 0.3
+const ATTRACTION_FORCE = 3.5
+const MOUSE_FORCE_COEF = 12
 const STENCIL_REF = 1
 const ISO_SCALE = 0.18
 
-const ORBIT_SPEED = 0.008
+const ORBIT_SPEED = 0.025
 
-const CLICK_IMPULSE = 8.0
-const CLICK_TORQUE = 3.0
+const CLICK_IMPULSE = 12.0
+const CLICK_TORQUE = 5.0
 
 // Paletas de color — ciclan al hacer click
 const PALETTES = [
@@ -112,7 +112,7 @@ export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCou
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(x, y, z)
         .setLinearDamping(DAMPING)
-        .setAngularDamping(0.8)
+        .setAngularDamping(0.3)
     )
 
     const { mat, type } = pickMaterial(index)
