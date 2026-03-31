@@ -3,7 +3,7 @@ import { usePhysicsSandbox } from './usePhysicsSandbox'
 
 const FRUSTUM_SIZE = 12
 
-export function useHeroScene(canvasRef, sandboxDivRef, objectCount) {
+export function useHeroScene(canvasRef, sandboxDivRef, objectCount, isMobile) {
   const isReady = ref(false)
   const isLoading = ref(true)
 
@@ -53,6 +53,7 @@ export function useHeroScene(canvasRef, sandboxDivRef, objectCount) {
       scene,
       sandboxDivId: sandboxDivRef.value.id,
       objectCount: objectCount.value,
+      isMobile: isMobile?.value ?? false,
     })
 
     clock = new THREE.Clock()

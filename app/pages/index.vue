@@ -1,6 +1,6 @@
 <template>
   <main>
-    <HeroCanvas v-if="canWebGL" :object-count="objectCount" />
+    <HeroCanvas v-if="canWebGL" :object-count="objectCount" :is-mobile="isMobile" />
     <HeroFallback v-else />
   </main>
 </template>

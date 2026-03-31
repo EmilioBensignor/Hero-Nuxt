@@ -1,6 +1,7 @@
 <script setup>
 const props = defineProps({
   objectCount: { type: Number, default: 15 },
+  isMobile: { type: Boolean, default: false },
 })
 
 const canvas = ref(null)
@@ -9,7 +10,8 @@ const sandboxDiv = ref(null)
 const { dispose } = useHeroScene(
   canvas,
   sandboxDiv,
-  toRef(props, 'objectCount')
+  toRef(props, 'objectCount'),
+  toRef(props, 'isMobile')
 )
 
 onUnmounted(() => dispose())
@@ -36,11 +38,13 @@ onUnmounted(() => dispose())
   inset: 0;
   width: 100%;
   height: 100%;
+  touch-action: none;
 }
 .hero-sandbox {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  touch-action: none;
 }
 </style>

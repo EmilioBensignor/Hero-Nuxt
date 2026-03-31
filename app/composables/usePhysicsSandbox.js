@@ -5,16 +5,16 @@ import {
 } from './useThreeUtils'
 
 // Parámetros de física — valores del reverse engineering de Lusion
-const DAMPING = 0.3
-const ATTRACTION_FORCE = 3.5
+const DAMPING = 0.15
+const ATTRACTION_FORCE = 5.0
 const MOUSE_FORCE_COEF = 12
 const STENCIL_REF = 1
 const ISO_SCALE = 0.18
 
-const ORBIT_SPEED = 0.025
+const ORBIT_SPEED = 0.06
 
-const CLICK_IMPULSE = 12.0
-const CLICK_TORQUE = 5.0
+const CLICK_IMPULSE = 16.0
+const CLICK_TORQUE = 8.0
 
 // Paletas de color — ciclan al hacer click
 const PALETTES = [
@@ -24,7 +24,7 @@ const PALETTES = [
   { black: 0x0a0a0a, white: 0xf0f0f0, accent: 0x00BFA5 },
 ]
 
-export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCount = 15 }) {
+export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCount = 15, isMobile = false }) {
   const THREE = await import('three')
   const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js')
   const RAPIER = await import('@dimforge/rapier3d-compat')
@@ -57,18 +57,19 @@ export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCou
     stencilFunc: THREE.EqualStencilFunc,
   }
 
+  const MaterialClass = isMobile ? THREE.MeshStandardMaterial : THREE.MeshPhysicalMaterial
+
   const plasticBase = {
     roughness: 0.28,
     metalness: 0,
-    clearcoat: 0.4,
-    clearcoatRoughness: 0.15,
-    envMapIntensity: 1.2,
+    envMapIntensity: isMobile ? 0.6 : 1.2,
     ...stencilProps,
+    ...(isMobile ? {} : { clearcoat: 0.4, clearcoatRoughness: 0.15 }),
   }
 
-  const matBlack = new THREE.MeshPhysicalMaterial({ color: 0x0a0a0a, ...plasticBase })
-  const matWhite = new THREE.MeshPhysicalMaterial({ color: 0xf0f0f0, ...plasticBase })
-  const matAccent = new THREE.MeshPhysicalMaterial({ color: PALETTES[0].accent, ...plasticBase })
+  const matBlack = new MaterialClass({ color: 0x0a0a0a, ...plasticBase })
+  const matWhite = new MaterialClass({ color: 0xf0f0f0, ...plasticBase })
+  const matAccent = new MaterialClass({ color: PALETTES[0].accent, ...plasticBase })
   const materials = [matBlack, matWhite, matAccent]
 
   function pickMaterial(index) {
@@ -112,7 +113,7 @@ export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCou
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(x, y, z)
         .setLinearDamping(DAMPING)
-        .setAngularDamping(0.3)
+        .setAngularDamping(0.15)
     )
 
     const { mat, type } = pickMaterial(index)
@@ -132,20 +133,20 @@ export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCou
       const points = new Float32Array(geo.attributes.position.array)
       const colliderDesc = RAPIER.ColliderDesc.convexHull(points)
       if (colliderDesc) {
-        colliderDesc.setMass(1.5)
-        colliderDesc.setRestitution(0.05)
-        colliderDesc.setFriction(0.8)
+        colliderDesc.setMass(0.8)
+        colliderDesc.setRestitution(0.3)
+        colliderDesc.setFriction(0.3)
         world.createCollider(colliderDesc, rigidbody)
       } else {
         world.createCollider(
-          RAPIER.ColliderDesc.ball(0.6).setMass(1.5).setRestitution(0.05),
+          RAPIER.ColliderDesc.ball(0.6).setMass(0.8).setRestitution(0.3),
           rigidbody
         )
       }
     } else {
       mesh = new THREE.Mesh(new THREE.SphereGeometry(0.6), mat)
       world.createCollider(
-        RAPIER.ColliderDesc.ball(0.6).setMass(0.8).setRestitution(0.15),
+        RAPIER.ColliderDesc.ball(0.6).setMass(0.5).setRestitution(0.4),
         rigidbody
       )
     }
@@ -225,6 +226,7 @@ export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCou
   // ── Event handlers ──────────────────────────────────────────────
   function onPointerMove(event) {
     if (!world) return
+    if (event.touches) event.preventDefault()
 
     const px = event.touches ? event.touches[0].pageX : event.pageX
     const py = event.touches ? event.touches[0].pageY : event.pageY
@@ -284,7 +286,7 @@ export async function usePhysicsSandbox({ camera, scene, sandboxDivId, objectCou
   }
 
   window.addEventListener('mousemove', onPointerMove, false)
-  window.addEventListener('touchmove', onPointerMove, { passive: true })
+  window.addEventListener('touchmove', onPointerMove, { passive: false })
   clickTarget = document.getElementById(sandboxDivId)
   if (clickTarget) {
     clickTarget.addEventListener('click', onClick, false)
